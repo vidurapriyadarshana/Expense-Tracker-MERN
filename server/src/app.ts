@@ -4,6 +4,7 @@ import * as swaggerUi from 'swagger-ui-express'
 import morganMiddleware from './configurations/morgan.config'
 import swaggerSpec from './configurations/swagger.config'
 import authRoutes from './routes/auth.routes'
+import incomeRoutes from './routes/income.routes'
 
 const app: Application = express()
 
@@ -18,6 +19,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/income', incomeRoutes)
 
 /**
  * @swagger
