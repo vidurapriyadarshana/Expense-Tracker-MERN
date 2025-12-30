@@ -1,11 +1,14 @@
 import express, { Application } from 'express'
+import cors from 'cors'
 import * as swaggerUi from 'swagger-ui-express'
 import morganMiddleware from './configurations/morgan.config'
 import swaggerSpec from './configurations/swagger.config'
+import authRoutes from './routes/auth.routes'
 
 const app: Application = express()
 
 // Middleware
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(morganMiddleware)
@@ -14,23 +17,35 @@ app.use(morganMiddleware)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Routes
+app.use('/api/auth', authRoutes)
+
 /**
  * @swagger
- * /:
+ * /health:
  *   get:
- *     summary: Welcome endpoint
- *     description: Returns a welcome message
+ *     summary: Health check endpoint
+ *     description: Returns the health status of the server
+ *     tags: [Health]
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Server is healthy
  *         content:
- *           text/plain:
+ *           application/json:
  *             schema:
- *               type: string
- *               example: Hello World!
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 timestamp:
+ *                   type: string
+ *                   example: 2025-12-30T17:00:00.000Z
  */
-app.get('/', (req, res) => {
-  res.send('Hello World!')
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  })
 })
 
 export default app
