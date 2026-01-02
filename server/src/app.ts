@@ -6,6 +6,7 @@ import swaggerSpec from './configurations/swagger.config'
 import authRoutes from './routes/auth.routes'
 import incomeRoutes from './routes/income.routes'
 import expenseRoutes from './routes/expense.routes'
+import dashboardRoutes from './routes/dashboard.routes'
 
 const app: Application = express()
 
@@ -22,6 +23,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use('/api/auth', authRoutes)
 app.use('/api/income', incomeRoutes)
 app.use('/api/expense', expenseRoutes)
+app.use('/api/dashboard', dashboardRoutes)
 
 /**
  * @swagger
