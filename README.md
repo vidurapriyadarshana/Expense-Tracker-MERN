@@ -317,11 +317,6 @@ http://localhost:8080/api-docs
 ### Expense Management
 ![Expense Page](./screenshots/expense.png)
 
-### Financial Charts
-![Charts](./screenshots/charts.png)
-
-> **Note:** Create a `screenshots` folder in the root directory and add the corresponding screenshots.
-
 ---
 
 ## Environment Variables Reference
