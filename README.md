@@ -46,7 +46,9 @@ A full-stack expense tracking application built with the MERN stack (MongoDB, Ex
 | TypeScript | 5.7.2 | Type safety |
 | JWT | 9.0.3 | Authentication |
 | bcrypt | 6.0.0 | Password hashing |
-| ExcelJS | 4.4.0 | Excel file export |
+| Passport | 0.7.0 | Authentication middleware |
+| passport-google-oauth20 | 2.0.0 | Google OAuth 2.0 strategy |
+| PDFKit | 0.17.2 | PDF report generation |
 | Swagger | 6.2.8 | API documentation |
 | Winston | 3.19.0 | Application logging |
 | Morgan | 1.10.1 | HTTP request logging |
@@ -58,6 +60,9 @@ A full-stack expense tracking application built with the MERN stack (MongoDB, Ex
 ### Authentication
 - User registration with secure password hashing
 - JWT-based login authentication
+- **Google OAuth 2.0** - Sign in with Google account
+  - Automatic account linking for existing users
+  - Profile picture sync from Google
 - Protected routes with automatic token management
 - User profile management
 
@@ -65,13 +70,13 @@ A full-stack expense tracking application built with the MERN stack (MongoDB, Ex
 - Add income entries with source, amount, icon, and date
 - View all income records
 - Delete income entries
-- Export income data to Excel
+- Export income data to PDF
 
 ### Expense Management
 - Add expense entries with category, amount, icon, and date
 - View all expense records
 - Delete expense entries
-- Export expense data to Excel
+- Export expense data to PDF
 
 ### Dashboard & Analytics
 - Financial overview with total balance, income, and expenses
@@ -88,7 +93,8 @@ A full-stack expense tracking application built with the MERN stack (MongoDB, Ex
 - Responsive design for all devices
 - Modern and intuitive UI
 - Swagger API documentation
-- Excel export functionality
+- PDF export functionality
+- LKR (Sri Lankan Rupee) currency formatting
 
 ---
 
@@ -114,7 +120,7 @@ Expense-Tracker-MERN/
 │   │   │   │   └── Sidebar.tsx
 │   │   │   └── ui/                  # Reusable UI components
 │   │   ├── pages/
-│   │   │   ├── auth/                # Login & SignUp pages
+│   │   │   ├── auth/                # Login, SignUp & Google OAuth pages
 │   │   │   └── dashboard/           # Dashboard pages
 │   │   ├── store/                   # Redux store & slices
 │   │   ├── types/                   # TypeScript interfaces
@@ -130,6 +136,7 @@ Expense-Tracker-MERN/
 │   │   │   ├── env.config.ts        # Environment variables
 │   │   │   ├── logger.config.ts     # Winston logger
 │   │   │   ├── morgan.config.ts     # HTTP logging
+│   │   │   ├── passport.config.ts   # Google OAuth setup
 │   │   │   └── swagger.config.ts    # Swagger setup
 │   │   ├── controllers/             # Route controllers
 │   │   ├── middlewares/             # Auth middleware
@@ -188,6 +195,11 @@ MONGO_URI=mongodb://localhost:27017/expense-tracker
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 JWT_EXPIRES_IN=7d
+
+# Google OAuth (Optional - for Google Sign-In)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+SERVER_URL=http://localhost:8080
 
 # CORS
 CLIENT_URL=http://localhost:5173
@@ -271,16 +283,18 @@ http://localhost:8080/api-docs
 | POST | `/api/auth/register` | Register a new user | No |
 | POST | `/api/auth/login` | User login | No |
 | GET | `/api/auth/profile` | Get user profile | Yes |
+| GET | `/api/auth/google` | Initiate Google OAuth | No |
+| GET | `/api/auth/google/callback` | Google OAuth callback | No |
 | **Income** |
 | POST | `/api/income` | Add new income | Yes |
 | GET | `/api/income/all` | Get all incomes | Yes |
 | DELETE | `/api/income/:id` | Delete income | Yes |
-| GET | `/api/income/downloadExcel` | Export to Excel | Yes |
+| GET | `/api/income/downloadPdf` | Export to PDF | Yes |
 | **Expense** |
 | POST | `/api/expense` | Add new expense | Yes |
 | GET | `/api/expense/all` | Get all expenses | Yes |
 | DELETE | `/api/expense/:id` | Delete expense | Yes |
-| GET | `/api/expense/downloadExcel` | Export to Excel | Yes |
+| GET | `/api/expense/downloadPdf` | Export to PDF | Yes |
 | **Dashboard** |
 | GET | `/api/dashboard` | Get dashboard data | Yes |
 | **Health** |
@@ -330,6 +344,9 @@ http://localhost:8080/api-docs
 | `MONGO_URI` | MongoDB connection string | - | **Yes** |
 | `JWT_SECRET` | JWT signing secret | - | **Yes** |
 | `JWT_EXPIRES_IN` | JWT expiration time | `7d` | No |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | - | For OAuth |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | - | For OAuth |
+| `SERVER_URL` | Backend URL for OAuth callback | `http://localhost:8080` | For OAuth |
 | `CLIENT_URL` | Frontend URL for CORS | `http://localhost:5173` | No |
 
 ### Client Environment Variables
