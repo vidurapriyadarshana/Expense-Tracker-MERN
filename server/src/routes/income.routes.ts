@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { addIncome, getIncomes, removeIncome, downloadExcel } from '../controllers/income.controller'
+import { addIncome, getIncomes, removeIncome, downloadIncomePDF } from '../controllers/income.controller'
 import { authenticate } from '../middlewares/auth.middleware'
 
 const router = Router()
@@ -17,8 +17,8 @@ router.post('/', authenticate, addIncome)
 // GET /api/income/all - Get all incomes
 router.get('/all', authenticate, getIncomes)
 
-// GET /api/income/downloadExcel - Download incomes as Excel
-router.get('/downloadExcel', authenticate, downloadExcel)
+// GET /api/income/downloadPdf - Download incomes as PDF
+router.get('/downloadPdf', authenticate, downloadIncomePDF)
 
 // DELETE /api/income/:id - Delete income by ID
 router.delete('/:id', authenticate, removeIncome)

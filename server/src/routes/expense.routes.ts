@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { addExpense, getExpenses, removeExpense, downloadExpenseExcel } from '../controllers/expense.controller'
+import { addExpense, getExpenses, removeExpense, downloadExpensePDF } from '../controllers/expense.controller'
 import { authenticate } from '../middlewares/auth.middleware'
 
 const router = Router()
@@ -17,8 +17,8 @@ router.post('/', authenticate, addExpense)
 // GET /api/expense/all - Get all expenses
 router.get('/all', authenticate, getExpenses)
 
-// GET /api/expense/downloadExcel - Download expenses as Excel
-router.get('/downloadExcel', authenticate, downloadExpenseExcel)
+// GET /api/expense/downloadPdf - Download expenses as PDF
+router.get('/downloadPdf', authenticate, downloadExpensePDF)
 
 // DELETE /api/expense/:id - Delete expense by ID
 router.delete('/:id', authenticate, removeExpense)

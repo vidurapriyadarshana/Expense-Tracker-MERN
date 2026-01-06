@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs'
+import PDFDocument from 'pdfkit'
 import Income, { IIncome } from '../models/income.model'
 import { CreateIncomeDto } from '../types/income.types'
 
@@ -26,38 +26,28 @@ export const deleteIncome = async (userId: string, incomeId: string): Promise<II
   return income
 }
 
-export const generateExcel = async (userId: string): Promise<ExcelJS.Buffer> => {
+export const generateIncomePDF = async (userId: string): Promise<Buffer> => {
   const incomes = await Income.find({ userId }).sort({ date: -1 })
 
-  const workbook = new ExcelJS.Workbook()
-  const worksheet = workbook.addWorksheet('Incomes')
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument()
+    const chunks: Buffer[] = []
 
-  // Define columns
-  worksheet.columns = [
-    { header: 'Source', key: 'source', width: 20 },
-    { header: 'Amount', key: 'amount', width: 15 },
-    { header: 'Date', key: 'date', width: 15 },
-    { header: 'Icon', key: 'icon', width: 15 }
-  ]
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk))
+    doc.on('end', () => resolve(Buffer.concat(chunks)))
+    doc.on('error', (err: Error) => reject(err))
 
-  // Style header row
-  worksheet.getRow(1).font = { bold: true }
-  worksheet.getRow(1).fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFE0E0E0' }
-  }
+    doc.fontSize(20).text('Income Report', { align: 'center' })
+    doc.moveDown()
 
-  // Add data rows
-  incomes.forEach((income) => {
-    worksheet.addRow({
-      source: income.source,
-      amount: income.amount,
-      date: new Date(income.date).toLocaleDateString(),
-      icon: income.icon
+    incomes.forEach((income) => {
+      doc.fontSize(12).text(`Source: ${income.source}`)
+      doc.text(`Amount: ${income.amount}`)
+      doc.text(`Date: ${new Date(income.date).toLocaleDateString()}`)
+      doc.text(`Icon: ${income.icon}`)
+      doc.moveDown()
     })
-  })
 
-  const buffer = await workbook.xlsx.writeBuffer()
-  return buffer
+    doc.end()
+  })
 }

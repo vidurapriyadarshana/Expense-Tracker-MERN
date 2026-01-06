@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs'
+import PDFDocument from 'pdfkit'
 import Expense, { IExpense } from '../models/expense.model'
 import { CreateExpenseDto } from '../types/expense.types'
 
@@ -26,38 +26,28 @@ export const deleteExpense = async (userId: string, expenseId: string): Promise<
   return expense
 }
 
-export const generateExpenseExcel = async (userId: string): Promise<ExcelJS.Buffer> => {
+export const generateExpensePDF = async (userId: string): Promise<Buffer> => {
   const expenses = await Expense.find({ userId }).sort({ date: -1 })
 
-  const workbook = new ExcelJS.Workbook()
-  const worksheet = workbook.addWorksheet('Expenses')
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument()
+    const chunks: Buffer[] = []
 
-  // Define columns
-  worksheet.columns = [
-    { header: 'Category', key: 'category', width: 20 },
-    { header: 'Amount', key: 'amount', width: 15 },
-    { header: 'Date', key: 'date', width: 15 },
-    { header: 'Icon', key: 'icon', width: 15 }
-  ]
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk))
+    doc.on('end', () => resolve(Buffer.concat(chunks)))
+    doc.on('error', (err: Error) => reject(err))
 
-  // Style header row
-  worksheet.getRow(1).font = { bold: true }
-  worksheet.getRow(1).fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFE0E0E0' }
-  }
+    doc.fontSize(20).text('Expense Report', { align: 'center' })
+    doc.moveDown()
 
-  // Add data rows
-  expenses.forEach((expense) => {
-    worksheet.addRow({
-      category: expense.category,
-      amount: expense.amount,
-      date: new Date(expense.date).toLocaleDateString(),
-      icon: expense.icon
+    expenses.forEach((expense) => {
+      doc.fontSize(12).text(`Category: ${expense.category}`)
+      doc.text(`Amount: ${expense.amount}`)
+      doc.text(`Date: ${new Date(expense.date).toLocaleDateString()}`)
+      doc.text(`Icon: ${expense.icon}`)
+      doc.moveDown()
     })
-  })
 
-  const buffer = await workbook.xlsx.writeBuffer()
-  return buffer
+    doc.end()
+  })
 }

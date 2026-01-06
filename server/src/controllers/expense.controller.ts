@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { createExpense, getAllExpenses, deleteExpense, generateExpenseExcel } from '../services/expense.service'
+import { createExpense, getAllExpenses, deleteExpense, generateExpensePDF } from '../services/expense.service'
 import { AuthRequest } from '../types/auth.types'
 import { ExpenseResponse } from '../types/expense.types'
 import logger from '../configurations/logger.config'
@@ -216,7 +216,7 @@ export const removeExpense = async (req: AuthRequest, res: Response): Promise<vo
  *       401:
  *         description: Unauthorized
  */
-export const downloadExpenseExcel = async (req: AuthRequest, res: Response): Promise<void> => {
+export const downloadExpensePDF = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -226,16 +226,16 @@ export const downloadExpenseExcel = async (req: AuthRequest, res: Response): Pro
       return
     }
 
-    const buffer = await generateExpenseExcel(req.user._id.toString())
+    const buffer = await generateExpensePDF(req.user._id.toString())
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    res.setHeader('Content-Disposition', 'attachment; filename=expenses.xlsx')
+    res.attachment('expenses.pdf')
+    res.type('application/pdf')
     res.send(buffer)
   } catch (error) {
-    logger.error(`Download Excel error: ${error}`)
+    logger.error(`Download PDF error: ${error}`)
     res.status(400).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to download Excel'
+      message: error instanceof Error ? error.message : 'Failed to download PDF'
     } as ExpenseResponse)
   }
 }
