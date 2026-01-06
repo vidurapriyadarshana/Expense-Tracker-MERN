@@ -357,6 +357,60 @@ http://localhost:8080/api-docs
 
 ---
 
+## Database Models
+
+### User Model
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `fullName` | String | User's full name (2-100 chars) |
+| `email` | String | Unique email address (lowercase) |
+| `password` | String | Hashed password (min 6 chars, optional for OAuth) |
+| `profileUrl` | String | Profile picture URL (optional) |
+| `googleId` | String | Google OAuth ID (optional) |
+| `authProvider` | String | `local` or `google` |
+| `createdAt` | Date | Account creation timestamp |
+| `updatedAt` | Date | Last update timestamp |
+
+### Income Model
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | ObjectId | Reference to User |
+| `icon` | String | Emoji icon for the income |
+| `source` | String | Income source name (max 100 chars) |
+| `amount` | Number | Income amount (min 0) |
+| `date` | Date | Income date |
+
+### Expense Model
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | ObjectId | Reference to User |
+| `icon` | String | Emoji icon for the expense |
+| `category` | String | Expense category (max 100 chars) |
+| `amount` | Number | Expense amount (min 0) |
+| `date` | Date | Expense date |
+
+---
+
+## Google OAuth Setup (Optional)
+
+To enable Google Sign-In:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Navigate to **APIs & Services** > **Credentials**
+4. Click **Create Credentials** > **OAuth 2.0 Client IDs**
+5. Configure the OAuth consent screen if prompted
+6. Set the application type to **Web application**
+7. Add authorized redirect URIs:
+   - Development: `http://localhost:8080/api/auth/google/callback`
+   - Production: `https://your-api-domain.com/api/auth/google/callback`
+8. Copy the Client ID and Client Secret to your `.env` file
+
+---
+
 ## Contributing
 
 1. Fork the repository
