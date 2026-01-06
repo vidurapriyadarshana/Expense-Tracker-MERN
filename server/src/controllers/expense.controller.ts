@@ -1,6 +1,5 @@
-import { Response } from 'express'
+import { Request, Response } from 'express'
 import { createExpense, getAllExpenses, deleteExpense, generateExpensePDF } from '../services/expense.service'
-import { AuthRequest } from '../types/auth.types'
 import { ExpenseResponse } from '../types/expense.types'
 import logger from '../configurations/logger.config'
 
@@ -45,7 +44,7 @@ import logger from '../configurations/logger.config'
  *       401:
  *         description: Unauthorized
  */
-export const addExpense = async (req: AuthRequest, res: Response): Promise<void> => {
+export const addExpense = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -104,7 +103,7 @@ export const addExpense = async (req: AuthRequest, res: Response): Promise<void>
  *       401:
  *         description: Unauthorized
  */
-export const getExpenses = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getExpenses = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -162,7 +161,7 @@ export const getExpenses = async (req: AuthRequest, res: Response): Promise<void
  *       404:
  *         description: Expense not found
  */
-export const removeExpense = async (req: AuthRequest, res: Response): Promise<void> => {
+export const removeExpense = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -216,7 +215,7 @@ export const removeExpense = async (req: AuthRequest, res: Response): Promise<vo
  *       401:
  *         description: Unauthorized
  */
-export const downloadExpensePDF = async (req: AuthRequest, res: Response): Promise<void> => {
+export const downloadExpensePDF = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({

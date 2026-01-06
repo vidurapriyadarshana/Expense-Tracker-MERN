@@ -1,6 +1,13 @@
 import { Request } from 'express'
 import { IUser } from '../models/user.model'
 
+// Extend Express Request interface globally
+declare global {
+  namespace Express {
+    interface User extends IUser {}
+  }
+}
+
 export interface RegisterDto {
   fullName: string
   email: string

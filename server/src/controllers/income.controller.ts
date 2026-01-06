@@ -1,6 +1,5 @@
-import { Response } from 'express'
+import { Request, Response } from 'express'
 import { createIncome, getAllIncomes, deleteIncome, generateIncomePDF } from '../services/income.service'
-import { AuthRequest } from '../types/auth.types'
 import { IncomeResponse } from '../types/income.types'
 import logger from '../configurations/logger.config'
 
@@ -45,7 +44,7 @@ import logger from '../configurations/logger.config'
  *       401:
  *         description: Unauthorized
  */
-export const addIncome = async (req: AuthRequest, res: Response): Promise<void> => {
+export const addIncome = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -104,7 +103,7 @@ export const addIncome = async (req: AuthRequest, res: Response): Promise<void> 
  *       401:
  *         description: Unauthorized
  */
-export const getIncomes = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getIncomes = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -162,7 +161,7 @@ export const getIncomes = async (req: AuthRequest, res: Response): Promise<void>
  *       404:
  *         description: Income not found
  */
-export const removeIncome = async (req: AuthRequest, res: Response): Promise<void> => {
+export const removeIncome = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({
@@ -216,7 +215,7 @@ export const removeIncome = async (req: AuthRequest, res: Response): Promise<voi
  *       401:
  *         description: Unauthorized
  */
-export const downloadIncomePDF = async (req: AuthRequest, res: Response): Promise<void> => {
+export const downloadIncomePDF = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({

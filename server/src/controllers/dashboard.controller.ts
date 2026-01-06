@@ -1,6 +1,5 @@
-import { Response } from 'express'
+import { Request, Response } from 'express'
 import { getDashboardData } from '../services/dashboard.service'
-import { AuthRequest } from '../types/auth.types'
 import { DashboardResponse } from '../types/dashboard.types'
 import logger from '../configurations/logger.config'
 
@@ -112,7 +111,7 @@ import logger from '../configurations/logger.config'
  *       401:
  *         description: Unauthorized
  */
-export const getDashboard = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getDashboard = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({

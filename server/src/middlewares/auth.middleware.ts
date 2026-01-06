@@ -1,11 +1,10 @@
-import { Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { verifyToken } from '../services/auth.service'
 import User from '../models/user.model'
-import { AuthRequest } from '../types/auth.types'
 import logger from '../configurations/logger.config'
 
 export const authenticate = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {

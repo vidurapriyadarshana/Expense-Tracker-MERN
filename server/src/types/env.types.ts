@@ -5,4 +5,7 @@ export interface EnvConfig {
   JWT_SECRET: string
   JWT_EXPIRES_IN: string
   CLIENT_URL: string
+  GOOGLE_CLIENT_ID: string
+  GOOGLE_CLIENT_SECRET: string
+  SERVER_URL: string
 }

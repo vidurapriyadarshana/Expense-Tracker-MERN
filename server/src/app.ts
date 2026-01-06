@@ -3,6 +3,7 @@ import cors from 'cors'
 import * as swaggerUi from 'swagger-ui-express'
 import morganMiddleware from './configurations/morgan.config'
 import swaggerSpec from './configurations/swagger.config'
+import passport from './configurations/passport.config'
 import authRoutes from './routes/auth.routes'
 import incomeRoutes from './routes/income.routes'
 import expenseRoutes from './routes/expense.routes'
@@ -15,6 +16,9 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(morganMiddleware)
+
+// Initialize Passport
+app.use(passport.initialize())
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))

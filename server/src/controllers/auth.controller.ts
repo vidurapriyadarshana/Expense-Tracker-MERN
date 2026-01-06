@@ -1,7 +1,10 @@
-import { Request, Response } from 'express'
-import { registerUser, loginUser, getUserProfile } from '../services/auth.service'
-import { AuthRequest, AuthResponse } from '../types/auth.types'
+import { Request, Response, NextFunction } from 'express'
+import { registerUser, loginUser, getUserProfile, generateToken } from '../services/auth.service'
+import { AuthResponse } from '../types/auth.types'
 import logger from '../configurations/logger.config'
+import passport from '../configurations/passport.config'
+import { IUser } from '../models/user.model'
+import env from '../configurations/env.config'
 
 /**
  * @swagger
@@ -152,9 +155,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
  *       401:
  *         description: Unauthorized
  */
-export const profile = async (req: AuthRequest, res: Response): Promise<void> => {
+export const profile = async (req: Request, res: Response): Promise<void> => {
   try {
-    if (!req.user) {
+    const user = req.user as IUser | undefined
+    if (!user) {
       res.status(401).json({
         success: false,
         message: 'Unauthorized'
@@ -162,17 +166,17 @@ export const profile = async (req: AuthRequest, res: Response): Promise<void> =>
       return
     }
 
-    const user = await getUserProfile(req.user._id.toString())
+    const userProfile = await getUserProfile(user._id.toString())
 
     res.status(200).json({
       success: true,
       message: 'Profile retrieved successfully',
       data: {
         user: {
-          id: user._id.toString(),
-          fullName: user.fullName,
-          email: user.email,
-          profileUrl: user.profileUrl
+          id: userProfile._id.toString(),
+          fullName: userProfile.fullName,
+          email: userProfile.email,
+          profileUrl: userProfile.profileUrl
         }
       }
     } as AuthResponse)
@@ -183,4 +187,55 @@ export const profile = async (req: AuthRequest, res: Response): Promise<void> =>
       message: error instanceof Error ? error.message : 'Failed to get profile'
     } as AuthResponse)
   }
+}
+
+/**
+ * @swagger
+ * /api/auth/google:
+ *   get:
+ *     summary: Initiate Google OAuth login
+ *     tags: [Auth]
+ *     description: Redirects to Google for authentication. The frontend only needs to call this endpoint.
+ *     responses:
+ *       302:
+ *         description: Redirect to Google OAuth consent screen
+ */
+export const googleAuth = (req: Request, res: Response, next: NextFunction): void => {
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false
+  })(req, res, next)
+}
+
+/**
+ * @swagger
+ * /api/auth/google/callback:
+ *   get:
+ *     summary: Google OAuth callback
+ *     tags: [Auth]
+ *     description: Handles the callback from Google OAuth and redirects to frontend with JWT token
+ *     responses:
+ *       302:
+ *         description: Redirects to frontend with token in URL query parameter
+ *       401:
+ *         description: Authentication failed
+ */
+export const googleCallback = (req: Request, res: Response, next: NextFunction): void => {
+  passport.authenticate('google', { session: false }, (err: Error | null, user: IUser | false) => {
+    if (err) {
+      logger.error(`Google OAuth error: ${err.message}`)
+      return res.redirect(`${env.CLIENT_URL}/login?error=${encodeURIComponent(err.message)}`)
+    }
+
+    if (!user) {
+      logger.error('Google OAuth: No user returned')
+      return res.redirect(`${env.CLIENT_URL}/login?error=${encodeURIComponent('Authentication failed')}`)
+    }
+
+    // Generate JWT token
+    const token = generateToken(user)
+
+    // Redirect to frontend with token
+    res.redirect(`${env.CLIENT_URL}/auth/google/callback?token=${token}`)
+  })(req, res, next)
 }

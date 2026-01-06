@@ -3,7 +3,7 @@ import User, { IUser } from '../models/user.model'
 import env from '../configurations/env.config'
 import { RegisterDto, LoginDto, JwtPayload } from '../types/auth.types'
 
-const generateToken = (user: IUser): string => {
+export const generateToken = (user: IUser): string => {
   const payload: JwtPayload = {
     userId: user._id.toString(),
     email: user.email
