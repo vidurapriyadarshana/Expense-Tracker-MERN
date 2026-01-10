@@ -8,6 +8,7 @@ export interface IUser extends Document {
   profileUrl: string
   googleId?: string
   authProvider: 'local' | 'google'
+  refreshTokens: string[]
   createdAt: Date
   updatedAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
@@ -51,7 +52,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ['local', 'google'],
       default: 'local'
-    }
+    },
+    refreshTokens: [{
+      type: String
+    }]
   },
   {
     timestamps: true

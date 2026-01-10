@@ -1,5 +1,7 @@
 import express, { Application } from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import env from './configurations/env.config'
 import * as swaggerUi from 'swagger-ui-express'
 import morganMiddleware from './configurations/morgan.config'
 import swaggerSpec from './configurations/swagger.config'
@@ -12,7 +14,11 @@ import dashboardRoutes from './routes/dashboard.routes'
 const app: Application = express()
 
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: env.CLIENT_URL,
+  credentials: true
+}))
+app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(morganMiddleware)

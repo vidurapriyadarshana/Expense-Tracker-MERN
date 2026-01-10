@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { register, login, profile, googleAuth, googleCallback } from '../controllers/auth.controller'
+import { register, login, profile, googleAuth, googleCallback, refreshToken, logout } from '../controllers/auth.controller'
 import { authenticate } from '../middlewares/auth.middleware'
 
 const router = Router()
@@ -29,6 +29,12 @@ router.post('/login', login)
 
 // GET /api/auth/profile (protected)
 router.get('/profile', authenticate, profile)
+
+// POST /api/auth/refresh-token
+router.post('/refresh-token', refreshToken)
+
+// POST /api/auth/logout
+router.post('/logout', logout)
 
 /**
  * @swagger

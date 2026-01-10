@@ -3,20 +3,33 @@ import User, { IUser } from '../models/user.model'
 import env from '../configurations/env.config'
 import { RegisterDto, LoginDto, JwtPayload } from '../types/auth.types'
 
-export const generateToken = (user: IUser): string => {
+export const generateAccessToken = (user: IUser): string => {
   const payload: JwtPayload = {
     userId: user._id.toString(),
     email: user.email
   }
 
   const options: SignOptions = {
-    expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn']
+    expiresIn: '15m'
   }
 
   return jwt.sign(payload, env.JWT_SECRET, options)
 }
 
-export const registerUser = async (data: RegisterDto): Promise<{ user: IUser; token: string }> => {
+export const generateRefreshToken = (user: IUser): string => {
+  const payload: JwtPayload = {
+    userId: user._id.toString(),
+    email: user.email
+  }
+
+  const options: SignOptions = {
+    expiresIn: '7d'
+  }
+
+  return jwt.sign(payload, env.JWT_SECRET, options)
+}
+
+export const registerUser = async (data: RegisterDto): Promise<{ user: IUser; accessToken: string; refreshToken: string }> => {
   const { fullName, email, password, profileUrl } = data
 
   // Check if user already exists
@@ -33,13 +46,18 @@ export const registerUser = async (data: RegisterDto): Promise<{ user: IUser; to
     profileUrl: profileUrl || ''
   })
 
-  // Generate token
-  const token = generateToken(user)
+  // Generate tokens
+  const accessToken = generateAccessToken(user)
+  const refreshToken = generateRefreshToken(user)
 
-  return { user, token }
+  // Save refresh token to user
+  user.refreshTokens = [refreshToken]
+  await user.save()
+
+  return { user, accessToken, refreshToken }
 }
 
-export const loginUser = async (data: LoginDto): Promise<{ user: IUser; token: string }> => {
+export const loginUser = async (data: LoginDto): Promise<{ user: IUser; accessToken: string; refreshToken: string }> => {
   const { email, password } = data
 
   // Find user and include password field
@@ -54,10 +72,47 @@ export const loginUser = async (data: LoginDto): Promise<{ user: IUser; token: s
     throw new Error('Invalid email or password')
   }
 
-  // Generate token
-  const token = generateToken(user)
+  // Generate tokens
+  // Generate tokens
+  const accessToken = generateAccessToken(user)
+  const refreshToken = generateRefreshToken(user)
 
-  return { user, token }
+  // Manage refresh tokens (max 5)
+  let refreshTokens = user.refreshTokens || []
+  refreshTokens.push(refreshToken)
+
+  if (refreshTokens.length > 5) {
+    // Remove oldest tokens to keep only last 5
+    refreshTokens = refreshTokens.slice(-5)
+  }
+
+  user.refreshTokens = refreshTokens
+  await user.save()
+
+  return { user, accessToken, refreshToken }
+}
+
+export const revokeRefreshToken = async (userId: string, token: string): Promise<void> => {
+  const user = await User.findById(userId)
+  if (!user) return
+
+  const originalLength = user.refreshTokens ? user.refreshTokens.length : 0
+  user.refreshTokens = user.refreshTokens.filter(t => t !== token)
+
+  if (user.refreshTokens.length !== originalLength) {
+    await user.save()
+  }
+}
+
+export const verifyRefreshTokenInDb = async (token: string): Promise<IUser> => {
+  const decoded = verifyToken(token)
+  const user = await getUserProfile(decoded.userId)
+
+  if (!user.refreshTokens || !user.refreshTokens.includes(token)) {
+    throw new Error('Invalid or revoked refresh token')
+  }
+
+  return user
 }
 
 export const getUserProfile = async (userId: string): Promise<IUser> => {
